@@ -45,7 +45,7 @@ except:
 pass
 
 # Fix up is_bf16_supported https://github.com/unslothai/unsloth/issues/504
-major_version, minor_version = torch.cuda.get_device_capability()
+major_version, minor_version = torch.cuda.get_device_capability(device=0)
 SUPPORTS_BFLOAT16 = (major_version >= 8)
 def is_bf16_supported(): return SUPPORTS_BFLOAT16
 torch.cuda.is_bf16_supported = is_bf16_supported
