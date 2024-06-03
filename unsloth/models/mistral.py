@@ -233,7 +233,7 @@ def MistralForCausalLM_fast_forward(
     else:
         logits = self.lm_head(hidden_states.to(lm_head.dtype))
     pass
-    logits = logits.to(self.config.torch_dtype)
+    logits = logits.to(torch.bfloat16)
 
     loss = None
     if labels is not None:
