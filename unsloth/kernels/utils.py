@@ -30,7 +30,8 @@ pass
 
 
 import bitsandbytes as bnb
-get_ptr = bnb.functional.get_ptr
+from bitsandbytes import functional
+get_ptr = functional.get_ptr
 import ctypes
 import torch
 cdequantize_blockwise_fp32      = bnb.functional.lib.cdequantize_blockwise_fp32
