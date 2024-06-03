@@ -538,7 +538,7 @@ def LlamaModel_fast_forward(
     if inputs_embeds is None:
         inputs_embeds = self.embed_tokens(input_ids)
 
-    inputs_embeds = inputs_embeds.to(self.config.torch_dtype)
+    inputs_embeds = inputs_embeds.to(dtype=self.config.torch_dtype)
 
     # Normalized from Gemma
     IS_GEMMA = self.config.model_type == "gemma"
