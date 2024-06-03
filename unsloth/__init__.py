@@ -46,7 +46,6 @@ pass
 
 # Fix up is_bf16_supported https://github.com/unslothai/unsloth/issues/504
 
-torch.cuda.is_bf16_supported = True
 
 # We support Pytorch 2
 # Fixes https://github.com/unslothai/unsloth/issues/38
