@@ -228,12 +228,12 @@ def MistralForCausalLM_fast_forward(
     bsz, q_len, hd = hidden_states.shape
     lm_head = self.lm_head.weight
     if bsz == 1 and q_len == 1:
-        logits = torch.mv(lm_head, hidden_states.ravel().to(lm_head.dtype))
+        logits = torch.mv(lm_head, hidden_states.ravel().to(torch.float16))
         logits = logits.unsqueeze(0).unsqueeze(0)
     else:
-        logits = self.lm_head(hidden_states.to(lm_head.dtype))
+        logits = self.lm_head(hidden_states.to(torch.float16))
     pass
-    logits = logits.to(lm_head.dtype)
+    logits = logits.to(torch.float16)
 
     loss = None
     if labels is not None:
@@ -291,7 +291,7 @@ class FastMistralModel(FastLlamaModel):
     def from_pretrained(
         model_name     = "unsloth/mistral-7b-bnb-4bit",
         max_seq_length = None,
-        dtype          = None,
+        dtype          = torch.float16,
         load_in_4bit   = True,
         token          = None,
         device_map     = "sequential",
@@ -353,14 +353,14 @@ class FastMistralModel(FastLlamaModel):
                 load_in_4bit              = True,
                 bnb_4bit_use_double_quant = True,
                 bnb_4bit_quant_type       = "nf4",
-                bnb_4bit_compute_dtype    = dtype,
+                bnb_4bit_compute_dtype    = torch.float16,
             )
 
         max_position_embeddings = max(max_seq_length, model_max_seq_length)
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
             device_map          = device_map,
-            torch_dtype         = dtype,
+            torch_dtype         = torch.float16,
             quantization_config = bnb_config,
             token               = token,
             # rope_scaling      = rope_scaling,
