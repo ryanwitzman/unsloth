@@ -62,7 +62,7 @@ class FastQwen2Model(FastLlamaModel):
     def from_pretrained(
         model_name     = "Qwen/Qwen1.5-7B",
         max_seq_length = 4096,
-        dtype          = None,
+        dtype          = torch.float16,
         load_in_4bit   = True,
         token          = None,
         device_map     = "sequential",
@@ -76,7 +76,7 @@ class FastQwen2Model(FastLlamaModel):
         return FastMistralModel.from_pretrained(
             model_name     = model_name,
             max_seq_length = max_seq_length,
-            dtype          = dtype,
+            dtype          = torch.float16,
             load_in_4bit   = load_in_4bit,
             token          = token,
             device_map     = device_map,
