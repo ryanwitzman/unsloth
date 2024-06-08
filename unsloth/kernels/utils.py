@@ -89,7 +89,7 @@ def fast_dequantize(W, quant_state = None, out = None):
         # https://github.com/TimDettmers/bitsandbytes/pull/763/files
         absmax     = quant_state.absmax
         shape      = quant_state.shape
-        dtype      = quant_state.dtype
+        dtype      = torch.float16
         blocksize  = quant_state.blocksize
         offset     = quant_state.offset
         state2     = quant_state.state2
@@ -108,7 +108,7 @@ def fast_dequantize(W, quant_state = None, out = None):
         out = torch.empty(shape, dtype = dtype, device = "cuda")
     else:
         assert(out.shape == shape)
-        assert(out.dtype == dtype)
+        assert(out.dtype == torch.float16)
 
     # NF4 dequantization of statistics
     n_elements_absmax = absmax.numel()
@@ -122,8 +122,7 @@ def fast_dequantize(W, quant_state = None, out = None):
     )
     out_absmax += offset
 
-    fx = cdequantize_blockwise_fp16_nf4 if dtype == torch.float16 else \
-         cdequantize_blockwise_bf16_nf4
+    fx = cdequantize_blockwise_fp16_nf4
     fx(get_ptr(None), get_ptr(W), ptr_out_absmax, get_ptr(out),
        ctypes.c_int(blocksize), ctypes.c_int(out.numel()))
 
@@ -144,7 +143,7 @@ def fast_gemv(X, W, quant_state, out = None):
         # https://github.com/TimDettmers/bitsandbytes/pull/763/files
         absmax     = quant_state.absmax
         shape      = quant_state.shape
-        dtype      = quant_state.dtype
+        dtype      = torch.float16
         blocksize  = quant_state.blocksize
         stats      = quant_state.code
         offset     = quant_state.offset
@@ -187,8 +186,7 @@ def fast_gemv(X, W, quant_state, out = None):
     df += offset
     absmax = df
 
-    fx = cgemm_4bit_inference_naive_fp16 if dtype == torch.float16 else \
-        cgemm_4bit_inference_naive_bf16
+    fx = cgemm_4bit_inference_naive_fp16
 
     blocksize = ctypes.c_int32(blocksize)
     fx(m, n, k, get_ptr(X), get_ptr(W), get_ptr(absmax), get_ptr(stats), get_ptr(out),
