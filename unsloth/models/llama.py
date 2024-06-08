@@ -538,7 +538,7 @@ def LlamaModel_fast_forward(
     if inputs_embeds is None:
         inputs_embeds = self.embed_tokens(input_ids)
 
-    inputs_embeds = inputs_embeds.to(dtype=torch.bfloat16)
+    inputs_embeds = inputs_embeds.to(dtype=torch.float16)
 
     # Normalized from Gemma
     IS_GEMMA = self.config.model_type == "gemma"
@@ -834,7 +834,7 @@ def CausalLM_fast_forward(fast_forward_inference):
         else:
             logits = self.lm_head(hidden_states.to(lm_head.dtype))
         pass
-        logits = logits.to(torch.bfloat16)
+        logits = logits.to(torch.float16)
 
         loss = None
         if labels is not None:
