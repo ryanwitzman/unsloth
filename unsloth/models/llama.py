@@ -1062,7 +1062,7 @@ class FastLlamaModel:
         # get_statistics()
 
         if dtype is None:
-            dtype = torch.float16 if not SUPPORTS_BFLOAT16 else torch.bfloat16
+            dtype = torch.float1
         elif dtype == torch.bfloat16 and not SUPPORTS_BFLOAT16:
             logger.warning_once("Device does not support bfloat16. Will change to float16.")
             dtype = torch.float16
@@ -1106,7 +1106,7 @@ class FastLlamaModel:
             model = AutoModelForCausalLM.from_pretrained(
                 model_name,
                 device_map              = device_map,
-                torch_dtype             = dtype,
+                torch_dtype             = torch.float16,
                 quantization_config     = bnb_config,
                 token                   = token,
                 rope_scaling            = rope_scaling,
@@ -1124,7 +1124,7 @@ class FastLlamaModel:
                 model = AutoModelForCausalLM.from_pretrained(
                     model_name,
                     device_map              = device_map,
-                    torch_dtype             = dtype,
+                    torch_dtype             = torch.float16,
                     quantization_config     = bnb_config,
                     token                   = token,
                     max_position_embeddings = max_position_embeddings,
