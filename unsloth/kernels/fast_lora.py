@@ -61,7 +61,7 @@ class LoRA_MLP(torch.autograd.Function):
                   upW,   upW_quant, upA,   upB,   upS,
                 downW, downW_quant, downA, downB, downS,
                 _forward_function, _backward_function,):
-        dtype = X.dtype
+        dtype = torch.float16
 
         e = matmul_lora(X, gateW, gateW_quant, gateA, gateB, gateS)
         g = matmul_lora(X,   upW,   upW_quant,   upA,   upB,   upS)
@@ -96,7 +96,7 @@ class LoRA_MLP(torch.autograd.Function):
         X  = X .view(-1, X .shape[-1])
         e  = e .view(-1, e .shape[-1])
         g  = g .view(-1, g .shape[-1])
-        dtype = X.dtype
+        dtype = torch.float16
 
         DW = matmul_lora(dY, downW.t(), downW_quant, downB, downA, downS)
         DW, e, g = _backward_function(DW, e, g)
@@ -125,12 +125,12 @@ class LoRA_MLP(torch.autograd.Function):
         upW = fast_dequantize(upW.t(), upW_quant)
         dX = torch.matmul(df, upW.t(), out = X)
         del upW
-        dX += df @ upB.to(dtype).t() @ (upS * upA.to(dtype).t())
+        dX += df @ upB.to(torch.float16).t() @ (upS * upA.to(torch.float16).t())
 
         gateW = fast_dequantize(gateW.t(), gateW_quant)
         dX += de @ gateW.t()
         del gateW
-        dX += de @ gateB.to(dtype).t() @ (gateS * gateA.to(dtype).t())
+        dX += de @ gateB.to(torch.float16).t() @ (gateS * gateA.to(torch.float16).t())
 
         # gateW, gateW_quant, gateA, gateB, gateS,
         #  upW,    upW_quant,   upA,   upB,   upS,
@@ -222,7 +222,7 @@ class LoRA_QKV(torch.autograd.Function):
                 QW, QW_quant, QA, QB, QS,
                 KW, KW_quant, KA, KB, KS,
                 VW, VW_quant, VA, VB, VS,):
-        dtype = X.dtype
+        dtype = torch.float16
 
         Q = matmul_lora(X, QW, QW_quant, QA, QB, QS)
         K = matmul_lora(X, KW, KW_quant, KA, KB, KS)
@@ -252,7 +252,7 @@ class LoRA_QKV(torch.autograd.Function):
         dK = dK.reshape(-1, dK.shape[-1]) # view doesn't work on K.T
         dV = dV.view(-1, dV.shape[-1])
         X  = X .view(-1, X .shape[-1])
-        dtype = X.dtype
+        dtype = torch.float16
 
         ### Weight projection LoRA weights
         # See our blogpost for more details.
@@ -280,19 +280,19 @@ class LoRA_QKV(torch.autograd.Function):
         QW = fast_dequantize(QW.t(), QW_quant)
         dX = torch.matmul(dQ, QW.t(), out = X)
         del QW
-        dX += (dQ @ QB.to(dtype).t() @ (QS * QA.to(dtype).t()))
+        dX += (dQ @ QB.to(torch.float16).t() @ (QS * QA.to(torch.float16).t()))
 
         # dK
         KW = fast_dequantize(KW.t(), KW_quant)
         dX += dK @ KW.t()
         del KW
-        dX += dK @ KB.to(dtype).t() @ (KS * KA.to(dtype).t())
+        dX += dK @ KB.to(torch.float16).t() @ (KS * KA.to(torch.float16).t())
 
         # dV
         VW = fast_dequantize(VW.t(), VW_quant)
         dX += dV @ VW.t()
         del VW
-        dX += dV @ VB.to(dtype).t() @ (VS * VA.to(dtype).t())
+        dX += dV @ VB.to(torch.float16).t() @ (VS * VA.to(torch.float16).t())
 
         # QW, QW_quant, QA, QB, QS,
         # KW, KW_quant, KA, KB, KS,
@@ -349,7 +349,7 @@ class LoRA_W(torch.autograd.Function):
     @torch.cuda.amp.custom_fwd
     def forward(ctx, X : torch.Tensor,
                 W, W_quant, A, B, S):
-        dtype = X.dtype
+        dtype = torch.float16
         XW = matmul_lora(X, W, W_quant, A, B, S)
         ctx.custom_saved_tensors = (W, W_quant, S,)
         ctx.save_for_backward(A, B, X)
@@ -367,7 +367,7 @@ class LoRA_W(torch.autograd.Function):
         batch, seq_len, hd = X.shape
         dY = dY.reshape(-1, dY.shape[-1]) # Must be reshape
         X  = X .reshape(-1, X .shape[-1]) # Must be reshape
-        dtype = X.dtype
+        dtype = torch.float16
 
         ### Weight projection LoRA weights
         # Weight projection
@@ -380,7 +380,7 @@ class LoRA_W(torch.autograd.Function):
         W = fast_dequantize(W.t(), W_quant)
         dX = dY @ W.t()
         del W
-        dX += dY @ B.to(dtype).t() @ (S * A.to(dtype).t())
+        dX += dY @ B.to(torch.float16).t() @ (S * A.to(torch.float16).t())
 
         # W, W_quant, A, B, S
         return dX.view(batch, seq_len, hd), \
