@@ -328,13 +328,7 @@ class FastMistralModel(FastLlamaModel):
         model_patcher.pre_patch()
         # get_statistics()
 
-        if dtype is None:
-            dtype = torch.float16 if not SUPPORTS_BFLOAT16 else torch.bfloat16
-        elif dtype == torch.bfloat16 and not SUPPORTS_BFLOAT16:
-            logger.warning_once("Device does not support bfloat16. Will change to float16.")
-            dtype = torch.float16
-
-        assert(dtype == torch.float16 or dtype == torch.bfloat16 or dtype == torch.float32)
+        dtype=torch.float16
 
         # Check max sequence length
         model_config = AutoConfig.from_pretrained(model_name, token = token)
